@@ -3,10 +3,17 @@ import DeviceUsageChart from '../charts/DeviceUsageChart';
 import { getDeviceUsage } from '../services/api';
 
 export default function Devices() {
+
   const [deviceUsage, setDeviceUsage] = useState([]);
 
   useEffect(() => {
-    getDeviceUsage().then(res => setDeviceUsage(res.data));
+    getDeviceUsage().then(res => {
+      // Convert count to number for recharts
+      const data = Array.isArray(res.data)
+        ? res.data.map(d => ({ ...d, count: Number(d.count) }))
+        : [];
+      setDeviceUsage(data);
+    });
   }, []);
 
   return (

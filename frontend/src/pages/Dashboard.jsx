@@ -17,7 +17,13 @@ export default function Dashboard() {
   useEffect(() => {
     getWeeklyActiveUsers().then(res => setWeeklyUsers(res.data));
     getEventFrequency().then(res => setEventFrequency(res.data));
-    getDeviceUsage().then(res => setDeviceUsage(res.data));
+    getDeviceUsage().then(res => {
+      // Convert count to number for recharts
+      const data = Array.isArray(res.data)
+        ? res.data.map(d => ({ ...d, count: Number(d.count) }))
+        : [];
+      setDeviceUsage(data);
+    });
     getSessionDuration().then(res => setSessionDuration(res.data));
   }, []);
 
