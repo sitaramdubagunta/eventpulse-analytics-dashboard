@@ -15,7 +15,10 @@ const app = express();
 app.use(helmet());
 // app.use(limiter); // Rate limiter disabled for development
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://eventpulse-analytics-dashboard.vercel.app'
+  ],
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization',
