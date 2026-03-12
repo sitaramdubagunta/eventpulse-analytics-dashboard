@@ -56,7 +56,7 @@ createTables().then(() => {
   app.use('/api/analytics', authMiddleware, analyticsRoutes);
   // Global error handler (should be last)
   app.use(errorHandler);
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 8000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
