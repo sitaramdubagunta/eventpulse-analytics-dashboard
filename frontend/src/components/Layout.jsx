@@ -1,7 +1,18 @@
+
 import Sidebar from './Sidebar';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth.jsx';
+import { useEffect } from 'react';
+
 
 export default function Layout() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
   return (
     <div className="flex min-h-screen bg-slate-100">
       <Sidebar />

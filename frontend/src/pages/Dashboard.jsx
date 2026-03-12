@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
 import StatCard from '../components/StatCard';
 import ChartCard from '../components/ChartCard';
-import WeeklyUsersChart from '../charts/WeeklyUsersChart';
+// import WeeklyUsersChart from '../charts/WeeklyUsersChart';
 import EventFrequencyChart from '../charts/EventFrequencyChart';
 import DeviceUsageChart from '../charts/DeviceUsageChart';
 import SessionDurationChart from '../charts/SessionDurationChart';
-import { getWeeklyActiveUsers, getEventFrequency, getDeviceUsage, getSessionDuration } from '../services/api';
+import { getEventFrequency, getDeviceUsage, getSessionDuration } from '../services/api';
 import { FaUsers, FaCalendarAlt, FaClock, FaMobileAlt } from 'react-icons/fa';
 
 export default function Dashboard() {
-  const [weeklyUsers, setWeeklyUsers] = useState([]);
+  // const [weeklyUsers, setWeeklyUsers] = useState([]);
   const [eventFrequency, setEventFrequency] = useState([]);
   const [deviceUsage, setDeviceUsage] = useState([]);
   const [sessionDuration, setSessionDuration] = useState([]);
 
   useEffect(() => {
-    getWeeklyActiveUsers().then(res => setWeeklyUsers(res.data));
+    // getWeeklyActiveUsers().then(res => setWeeklyUsers(res.data));
     getEventFrequency().then(res => setEventFrequency(res.data));
     getDeviceUsage().then(res => {
       // Convert count to number for recharts
@@ -27,12 +27,26 @@ export default function Dashboard() {
     getSessionDuration().then(res => setSessionDuration(res.data));
   }, []);
 
+  // Additional stats
+  const uniqueDevices = new Set(deviceUsage.map(d => d.device)).size;
+  // Try to get platform info from deviceUsage, fallback to eventFrequency if not present
+  let mostPopularPlatform = '--';
+  if (deviceUsage.length && deviceUsage[0].platform) {
+    const allPlatforms = deviceUsage.reduce((acc, d) => {
+      acc[d.platform] = (acc[d.platform] || 0) + d.count;
+      return acc;
+    }, {});
+    mostPopularPlatform = Object.entries(allPlatforms).sort((a, b) => b[1] - a[1])[0]?.[0] || '--';
+  } else if (eventFrequency.length && eventFrequency[0].platform) {
+    const allPlatforms = eventFrequency.reduce((acc, e) => {
+      acc[e.platform] = (acc[e.platform] || 0) + Number(e.event_count);
+      return acc;
+    }, {});
+    mostPopularPlatform = Object.entries(allPlatforms).sort((a, b) => b[1] - a[1])[0]?.[0] || '--';
+  }
+  const totalSessionDuration = sessionDuration.reduce((sum, s) => sum + (s.avg_session_duration || 0), 0);
+
   const kpi = [
-    {
-      title: 'Weekly Active Users',
-      value: weeklyUsers.length ? weeklyUsers[weeklyUsers.length - 1].active_users : '--',
-      icon: <FaUsers />, accent: 'text-indigo-600'
-    },
     {
       title: 'Total Events',
       value: eventFrequency.reduce((sum, e) => sum + Number(e.event_count), 0),
@@ -48,6 +62,21 @@ export default function Dashboard() {
       value: deviceUsage.length ? deviceUsage[0].device : '--',
       icon: <FaMobileAlt />, accent: 'text-slate-500'
     },
+    {
+      title: 'Unique Devices',
+      value: uniqueDevices,
+      icon: <FaMobileAlt />, accent: 'text-orange-500'
+    },
+    {
+      title: 'Popular Platform',
+      value: mostPopularPlatform,
+      icon: <FaMobileAlt />, accent: 'text-blue-500'
+    },
+    {
+      title: 'Total Session Duration',
+      value: totalSessionDuration ? Math.round(totalSessionDuration) + 's' : '--',
+      icon: <FaClock />, accent: 'text-purple-500'
+    },
   ];
 
   return (
@@ -60,9 +89,6 @@ export default function Dashboard() {
       </div>
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ChartCard title="Weekly Active Users">
-          <WeeklyUsersChart data={weeklyUsers} />
-        </ChartCard>
         <ChartCard title="Event Frequency">
           <EventFrequencyChart data={eventFrequency} />
         </ChartCard>
